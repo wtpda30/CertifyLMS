@@ -41,6 +41,8 @@ use App\Http\Controllers\Settings\SettingsDefaultEnrollmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WeakDrillController;
 use App\Http\Controllers\WeakDrillResultController;
+use App\Http\Controllers\QaReplyController;
+use App\Http\Controllers\QaThreadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -70,9 +72,19 @@ Route::middleware('auth')->group(function () {
     // 認可は EnrollmentPolicy::viewAny / view で 3 ロール対応済。閲覧範囲は EnrollmentController で
     // ロール別 eager-load + Blade の @can / @if で UI を出し分ける。
     Route::get('enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
-    Route::get('enrollments/{enrollment}', [EnrollmentController::class, 'show'])
-        ->withTrashed()
-        ->name('enrollments.show');
+    Route::get('enrollments/{enrollment}', [EnrollmentController::class, 'show'])->withTrashed()->name('enrollments.show');
+
+    Route::resource('qa-threads', QaThreadController::class)
+    ->names([
+        'index' => 'qa-board.index',
+        'create' => 'qa-board.create',
+    ]);
+
+    Route::post('/qa-threads/{qaThread}/replies',[QaReplyController::class, 'store'])->name('qa-replies.store');
+
+    Route::put('/qa-replies/{qaReply}',[QaReplyController::class, 'update'])->name('qa-replies.update');
+
+    Route::delete('/qa-replies/{qaReply}',[QaReplyController::class, 'destroy'])->name('qa-replies.destroy');
 });
 
 // ============================================================
